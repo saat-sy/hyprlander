@@ -1,10 +1,8 @@
-package cmd
+package cli
 
 import (
 	"fmt"
 
-	"github.com/saat-sy/hyprlander/cmd/initialize"
-	"github.com/saat-sy/hyprlander/cmd/prompt"
 	"github.com/spf13/cobra"
 )
 
@@ -14,12 +12,12 @@ func RootCommand() *cobra.Command {
 		Short: "An agent that can modify how hyprland looks!",
 		Long:  "Use this package to just give prompts and to directly make changes to the hypr config files",
 		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Printf("Hello world!")
+			fmt.Println("Welcome to hyprlander! Use 'hyprlander --help' to see available commands.")
 		},
 	}
 
-	rootCmd.AddCommand(prompt.PromptCommand())
-	rootCmd.AddCommand(initialize.InitCommand())
+	rootCmd.AddCommand(PromptCommand())
+	rootCmd.AddCommand(InitCommand())
 
 	return rootCmd
 }

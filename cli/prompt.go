@@ -1,4 +1,4 @@
-package prompt
+package cli
 
 import (
 	"fmt"
@@ -9,10 +9,10 @@ import (
 func PromptCommand() *cobra.Command {
 	promptCommand := &cobra.Command{
 		Use:   "prompt",
-		Short: "Short description for prompt",
-		Long:  "Long Description for prompt",
+		Short: "Execute prompt-based hyprland configuration changes",
+		Long:  "Use natural language prompts to modify hyprland configuration files",
 		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Printf("Hello world from prompt!")
+			fmt.Println("Prompt functionality coming soon!")
 		},
 	}
 

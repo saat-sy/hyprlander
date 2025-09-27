@@ -2,14 +2,16 @@ package main
 
 import (
 	"fmt"
+	"os"
 
-	root "github.com/saat-sy/hyprlander/cmd/root"
+	"github.com/saat-sy/hyprlander/cli"
 )
 
 func main() {
-	rootCmd := root.RootCommand()
+	rootCmd := cli.RootCommand()
 
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		os.Exit(1)
 	}
 }
