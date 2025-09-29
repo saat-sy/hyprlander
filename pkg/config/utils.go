@@ -23,3 +23,19 @@ func GetHomeDirectory() (string, error) {
 	}
 	return filepath.Join(homeDir, AppName), nil
 }
+
+func GetAPIKey() (string, error) {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return "", err
+	}
+
+	path := filepath.Join(homeDir, AppName, SecretFileName)
+
+	apiKey, err := os.ReadFile(path)
+	if err != nil {
+		return "", err
+	}
+
+	return string(apiKey), nil
+}
