@@ -3,6 +3,7 @@ package cli
 import (
 	"fmt"
 
+	"github.com/saat-sy/hyprlander/pkg/core/agent"
 	"github.com/spf13/cobra"
 )
 
@@ -12,7 +13,7 @@ func PromptCommand() *cobra.Command {
 		Short: "Execute prompt-based hyprland configuration changes",
 		Long:  "Use natural language prompts to modify hyprland configuration files",
 		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Println("Prompt functionality coming soon!")
+			// agent.InvokeAgent(args[0])
 		},
 	}
 
