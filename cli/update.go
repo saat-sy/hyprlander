@@ -30,10 +30,13 @@ func UpdateCommand() *cobra.Command {
 
 			fmt.Println("What do you want to update?")
 
-			index := 1
+			var keys []string
 			for key := range currentConfig {
-				fmt.Printf("%d. %s\n", index, key)
-				index++
+				keys = append(keys, key)
+			}
+
+			for i, key := range keys {
+				fmt.Printf("%d. %s\n", i+1, key)
 			}
 
 			inp, err := update.Prompt("Enter the number corresponding to the field you want to update: ")
@@ -46,15 +49,16 @@ func UpdateCommand() *cobra.Command {
 				return fmt.Errorf("invalid input, please enter a number: %w", err)
 			}
 
-			if selectedIndex < 1 || selectedIndex > len(currentConfig) {
+			if selectedIndex < 1 || selectedIndex > len(keys) {
 				return fmt.Errorf("invalid selection")
 			}
 
+			selectedKey := keys[selectedIndex-1]
+
 			contentMap := make(map[string]string)
 
-			index = 1
 			for key, value := range currentConfig {
-				if index == selectedIndex {
+				if key == selectedKey {
 					newValue, err := update.Prompt(fmt.Sprintf("Enter new value for %s (current: %s): ", key, value))
 					if err != nil {
 						return fmt.Errorf("failed to read new value: %w", err)
@@ -63,7 +67,6 @@ func UpdateCommand() *cobra.Command {
 				} else {
 					contentMap[key] = value
 				}
-				index++
 			}
 
 			if err := update.Update(contentMap); err != nil {
