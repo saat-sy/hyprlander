@@ -6,5 +6,5 @@ const (
 	APIKeyName      = "API_KEY"
 	HyprlandDirName = "HYPRLAND_DIR"
 	MaxTurns       = 10
-	GeminiModel    = "gemini-1.5-flash"
+	GeminiModel    = "gemini-2.0-flash-lite"
 )
