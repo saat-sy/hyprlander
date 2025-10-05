@@ -32,7 +32,7 @@ func (s *Setup) Run(values map[string]string) error {
 
 	var iniContent strings.Builder
 	for key, value := range values {
-		iniContent.WriteString(fmt.Sprintf("%s=%s\n", strings.ToLower(key), value))
+		iniContent.WriteString(fmt.Sprintf("%s=%s\n", key, value))
 	}
 
 	if err := os.WriteFile(secretFilePath, []byte(iniContent.String()), 0600); err != nil {
@@ -69,7 +69,7 @@ func (s *Setup) Update(values map[string]string) error {
 
 	var iniContent strings.Builder
 	for key, value := range values {
-		iniContent.WriteString(fmt.Sprintf("%s=%s\n", strings.ToLower(key), value))
+		iniContent.WriteString(fmt.Sprintf("%s=%s\n", key, value))
 	}
 
 	if err := os.WriteFile(secretFilePath, []byte(iniContent.String()), 0600); err != nil {
