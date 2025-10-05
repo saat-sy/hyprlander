@@ -18,6 +18,7 @@ func RootCommand() *cobra.Command {
 
 	rootCmd.AddCommand(PromptCommand())
 	rootCmd.AddCommand(InitCommand())
+	rootCmd.AddCommand(UpdateCommand())
 
 	return rootCmd
 }

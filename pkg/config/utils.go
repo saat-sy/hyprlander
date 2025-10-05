@@ -16,8 +16,8 @@ func DirExists(path string) (bool, error) {
 	return true, nil
 }
 
-func GetHomeDirectory() (string, error) {
-	homeDir, err := os.UserCacheDir()
+func GetUserHomeDirectory() (string, error) {
+	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		return "", err
 	}
@@ -38,4 +38,12 @@ func GetAPIKey() (string, error) {
 	}
 
 	return string(apiKey), nil
+}
+
+func GetSecretFilePath() (string, error) {
+	homeDir, err := GetUserHomeDirectory()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(homeDir, SecretFileName), nil
 }
