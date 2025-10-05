@@ -17,9 +17,9 @@ type Agent struct {
 	maxTurns    int
 }
 
-func NewAgent() *Agent {
+func NewAgent(tree []string) *Agent {
 	history := []*genai.Content{
-		genai.NewContentFromText(SystemPrompt, genai.RoleUser),
+		genai.NewContentFromText(GetSystemPrompt(tree), genai.RoleUser),
 	}
 
 	ctx := context.Background()
