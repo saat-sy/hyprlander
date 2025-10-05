@@ -11,7 +11,7 @@ import (
 )
 
 type Agent struct {
-	context 	context.Context
+	context     context.Context
 	chatSession *genai.Chat
 	history     []*genai.Content
 	maxTurns    int
@@ -28,21 +28,24 @@ func NewAgent() *Agent {
 		log.Fatal("Error retrieving API key:", err)
 	}
 	client, err := genai.NewClient(ctx, &genai.ClientConfig{
-        APIKey:  apiKey,
-        Backend: genai.BackendGeminiAPI,
-    })
+		APIKey:  apiKey,
+		Backend: genai.BackendGeminiAPI,
+	})
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	tools := tools.NewConfigForTools()
 
-	chat, _ := client.Chats.Create(
+	chat, err := client.Chats.Create(
 		ctx,
 		config.GeminiModel,
 		tools.Config,
 		history,
 	)
+	if err != nil {
+		log.Fatalf("Failed to create chat session: %v", err)
+	}
 
 	return &Agent{
 		context:     ctx,
@@ -58,11 +61,20 @@ func (agent *Agent) InvokeAgent(prompt string) {
 	for turn := 1; turn <= agent.maxTurns; turn++ {
 		fmt.Printf("----- Turn %d -----\n", turn)
 
-		res, _ := agent.chatSession.SendMessage(agent.context, genai.Part{Text: prompt})
+		res, err := agent.chatSession.SendMessage(agent.context, genai.Part{Text: prompt})
 
-		fmt.Printf("Response: %+v\n", res)
-		fmt.Printf("History: %+v\n", agent.chatSession.History(false))
+		if err != nil {
+			log.Printf("Error sending message: %v. Trying again...", err)
+			continue
+		}
 
-		break
+		// to call function: res.Candidates[0].Content.Parts[0].FunctionCall
+
+		if len(res.Candidates) > 0 {
+			// Call execute task function
+		} else {
+			fmt.Println("No response from the model. Trying again...")
+			continue
+		}
 	}
 }
