@@ -46,12 +46,12 @@ func UpdateCommand() *cobra.Command {
 				return fmt.Errorf("invalid input, please enter a number: %w", err)
 			}
 
-			if selectedIndex < 1 || selectedIndex >= index {
+			if selectedIndex < 1 || selectedIndex >= len(currentConfig) {
 				return fmt.Errorf("invalid selection")
 			}
 
 			contentMap := make(map[string]string)
-			
+
 			index = 1
 			for key, value := range currentConfig {
 				if index == selectedIndex {

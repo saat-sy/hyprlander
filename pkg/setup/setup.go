@@ -109,6 +109,9 @@ func (s *Setup) FetchConfig() (map[string]string, error) {
 	lines := strings.Split(string(content), "\n")
 	dataMap := make(map[string]string)
 	for _, line := range lines {
+		if strings.TrimSpace(line) == "" {
+			continue
+		}
 		parts := strings.SplitN(line, "=", 2)
 		if len(parts) == 2 {
 			dataMap[strings.TrimSpace(parts[0])] = strings.TrimSpace(parts[1])
