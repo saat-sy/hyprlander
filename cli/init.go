@@ -1,30 +1,11 @@
 package cli
 
 import (
-	"bufio"
 	"fmt"
-	"os"
-	"strings"
 
 	"github.com/saat-sy/hyprlander/pkg/setup"
 	"github.com/spf13/cobra"
 )
-
-func promptForAPIKey() (string, error) {
-	fmt.Print("Please enter your Gemini API key: ")
-	reader := bufio.NewReader(os.Stdin)
-	apiKey, err := reader.ReadString('\n')
-	if err != nil {
-		return "", fmt.Errorf("failed to read API key: %w", err)
-	}
-
-	apiKey = strings.TrimSpace(apiKey)
-	if apiKey == "" {
-		return "", fmt.Errorf("API key cannot be empty")
-	}
-
-	return apiKey, nil
-}
 
 func InitCommand() *cobra.Command {
 	initCommand := &cobra.Command{
@@ -36,13 +17,13 @@ func InitCommand() *cobra.Command {
 
 			init := setup.NewSetup()
 
-			status, _ := init.Check()
-			if status {
+			err := init.Check()
+			if err == nil {
 				fmt.Println("Hyprland already initialized!")
 				return nil
 			}
 
-			apiKey, err := promptForAPIKey()
+			apiKey, err := init.PromptForAPIKey()
 			if err != nil {
 				return fmt.Errorf("failed to get API key: %w", err)
 			}
