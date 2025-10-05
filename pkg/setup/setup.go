@@ -84,12 +84,12 @@ func (s *Setup) Prompt(message string) (string, error) {
 	reader := bufio.NewReader(os.Stdin)
 	data, err := reader.ReadString('\n')
 	if err != nil {
-		return "", fmt.Errorf("failed to read %s: %w", message, err)
+		return "", fmt.Errorf("failed to read data: %w", err)
 	}
 
 	data = strings.TrimSpace(data)
 	if data == "" {
-		return "", fmt.Errorf("%s cannot be empty", message)
+		return "", fmt.Errorf("input cannot be empty")
 	}
 
 	return data, nil
