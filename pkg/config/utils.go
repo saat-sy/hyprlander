@@ -24,61 +24,12 @@ func GetUserHomeDirectory() (string, error) {
 	return filepath.Join(homeDir, AppName), nil
 }
 
-func GetAPIKey() (string, error) {
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		return "", err
-	}
-
-	path := filepath.Join(homeDir, AppName, SecretFileName)
-
-	apiKey, err := os.ReadFile(path)
-	if err != nil {
-		return "", err
-	}
-
-	return string(apiKey), nil
-}
-
 func GetSecretFilePath() (string, error) {
 	homeDir, err := GetUserHomeDirectory()
 	if err != nil {
 		return "", err
 	}
 	return filepath.Join(homeDir, SecretFileName), nil
-}
-
-func GetAPIKey() (string, error) {
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		return "", err
-	}
-
-	path := filepath.Join(homeDir, AppName, SecretFileName)
-
-	apiKey, err := os.ReadFile(path)
-	if err != nil {
-		return "", err
-	}
-
-	return string(apiKey), nil
-}
-
-func GetHyprInstallationPath() (string, error) {
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		return "", err
-	}
-
-	exists, err := DirExists(filepath.Join(homeDir, ".hypr"))
-	if err != nil {
-		return "", err
-	}
-
-	if exists {
-		return filepath.Join(homeDir, ".hypr"), nil
-	} 
-	return "", errors.New(".hypr directory does not exist in the user's home directory")
 }
 
 func GetTreeFromDir(root string) ([]string, error) {

@@ -7,6 +7,7 @@ import (
 
 	"github.com/saat-sy/hyprlander/pkg/config"
 	"github.com/saat-sy/hyprlander/pkg/core/tools"
+	"github.com/saat-sy/hyprlander/pkg/setup"
 	"google.golang.org/genai"
 )
 
@@ -17,20 +18,38 @@ type Agent struct {
 	maxTurns    int
 }
 
-func NewAgent(tree []string) *Agent {
+func NewAgent() *Agent {
+	set := setup.NewSetup()
+
+	keys, err := set.FetchConfig()
+	if err != nil {
+		log.Fatal("Error fetching config:", err)
+	}
+
+	apiKey := keys[config.APIKeyName]
+	hyprlandDirName := keys[config.HyprlandDirName]
+
+	exists, err := config.DirExists(hyprlandDirName)
+	if !exists || err != nil {
+		log.Fatal("Hyprland directory does not exist. Please provide a valid path in the secrets.ini file.")
+	}
+
+	tree, err := config.GetTreeFromDir(hyprlandDirName)
+	if err != nil {
+		log.Fatal("Error building directory tree:", err)
+	}
+
 	history := []*genai.Content{
 		genai.NewContentFromText(GetSystemPrompt(tree), genai.RoleUser),
 	}
 
 	ctx := context.Background()
-	apiKey, err := config.GetAPIKey()
-	if err != nil {
-		log.Fatal("Error retrieving API key:", err)
-	}
+
 	client, err := genai.NewClient(ctx, &genai.ClientConfig{
 		APIKey:  apiKey,
 		Backend: genai.BackendGeminiAPI,
 	})
+
 	if err != nil {
 		log.Fatal(err)
 	}

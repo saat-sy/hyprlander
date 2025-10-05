@@ -5,6 +5,6 @@ const (
 	SecretFileName  = "secrets.ini"
 	APIKeyName      = "API_KEY"
 	HyprlandDirName = "HYPRLAND_DIR"
-	MaxTurns       = 10
-	GeminiModel    = "gemini-2.0-flash-lite"
+	MaxTurns        = 10
+	GeminiModel     = "gemini-2.0-flash-lite"
 )

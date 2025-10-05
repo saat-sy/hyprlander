@@ -38,4 +38,3 @@ var FileWriterTool = &genai.Tool{
 		},
 	},
 }
-
