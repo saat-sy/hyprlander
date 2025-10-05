@@ -2,6 +2,7 @@ package cli
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/saat-sy/hyprlander/pkg/setup"
 	"github.com/spf13/cobra"
@@ -13,7 +14,7 @@ func UpdateCommand() *cobra.Command {
 		Short: "Update gemini api key",
 		Long:  "Update the stored gemini api key used for authentication",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			fmt.Println("Updating Gemini API key...")
+			fmt.Println("Fetching current config...")
 
 			update := setup.NewSetup()
 
@@ -22,16 +23,57 @@ func UpdateCommand() *cobra.Command {
 				return fmt.Errorf("hyprlander is not initialized. Please run 'hyprlander init' first: %w", err)
 			}
 
-			apiKey, err := update.PromptForAPIKey()
+			currentConfig, err := update.FetchConfig()
 			if err != nil {
-				return fmt.Errorf("failed to get new API key: %w", err)
+				return fmt.Errorf("failed to fetch current config: %w", err)
 			}
 
-			if err := update.Update(apiKey); err != nil {
-				return fmt.Errorf("could not update API key: %w", err)
+			fmt.Println("What do you want to update?")
+
+			var keys []string
+			for key := range currentConfig {
+				keys = append(keys, key)
 			}
 
-			fmt.Println("Gemini API key updated successfully!")
+			for i, key := range keys {
+				fmt.Printf("%d. %s\n", i+1, key)
+			}
+
+			inp, err := update.Prompt("Enter the number corresponding to the field you want to update: ")
+			if err != nil {
+				return fmt.Errorf("failed to read input: %w", err)
+			}
+
+			selectedIndex, err := strconv.Atoi(inp)
+			if err != nil {
+				return fmt.Errorf("invalid input, please enter a number: %w", err)
+			}
+
+			if selectedIndex < 1 || selectedIndex > len(keys) {
+				return fmt.Errorf("invalid selection")
+			}
+
+			selectedKey := keys[selectedIndex-1]
+
+			contentMap := make(map[string]string)
+
+			for key, value := range currentConfig {
+				if key == selectedKey {
+					newValue, err := update.Prompt(fmt.Sprintf("Enter new value for %s (current: %s): ", key, value))
+					if err != nil {
+						return fmt.Errorf("failed to read new value: %w", err)
+					}
+					contentMap[key] = newValue
+				} else {
+					contentMap[key] = value
+				}
+			}
+
+			if err := update.Update(contentMap); err != nil {
+				return fmt.Errorf("failed to update config: %w", err)
+			}
+
+			fmt.Println("Config updated successfully!")
 			return nil
 		},
 	}
