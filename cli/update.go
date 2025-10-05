@@ -46,7 +46,7 @@ func UpdateCommand() *cobra.Command {
 				return fmt.Errorf("invalid input, please enter a number: %w", err)
 			}
 
-			if selectedIndex < 1 || selectedIndex >= len(currentConfig) {
+			if selectedIndex < 1 || selectedIndex > len(currentConfig) {
 				return fmt.Errorf("invalid selection")
 			}
 
