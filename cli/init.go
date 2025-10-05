@@ -3,6 +3,7 @@ package cli
 import (
 	"fmt"
 
+	"github.com/saat-sy/hyprlander/pkg/config"
 	"github.com/saat-sy/hyprlander/pkg/setup"
 	"github.com/spf13/cobra"
 )
@@ -23,12 +24,21 @@ func InitCommand() *cobra.Command {
 				return nil
 			}
 
-			apiKey, err := init.PromptForAPIKey()
+			apiKey, err := init.Prompt("Please enter your Gemini API key: ")
 			if err != nil {
 				return fmt.Errorf("failed to get API key: %w", err)
 			}
 
-			if err := init.Run(apiKey); err != nil {
+			hyprlandDir, err := init.Prompt("Please enter the path to your Hyprland configuration directory (e.g., /home/user/.config/hypr): ")
+			if err != nil {
+				return fmt.Errorf("failed to get Hyprland config directory: %w", err)
+			}
+
+			values := map[string]string{
+				config.APIKeyName:      apiKey,
+				config.HyprlandDirName: hyprlandDir,
+			}
+			if err := init.Run(values); err != nil {
 				return fmt.Errorf("could not complete initialization: %w", err)
 			}
 
