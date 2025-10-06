@@ -26,7 +26,6 @@ func NewAgent() *Agent {
 
 	keys, err := set.FetchConfig()
 	if err != nil {
-		userUI.PrintError(fmt.Errorf("error fetching config: %w", err))
 		log.Fatal("Error fetching config:", err)
 	}
 
@@ -35,13 +34,11 @@ func NewAgent() *Agent {
 
 	exists, err := config.DirExists(hyprlandDirName)
 	if !exists || err != nil {
-		userUI.PrintError(fmt.Errorf("hyprland directory does not exist. Please provide a valid path in the secrets.ini file"))
 		log.Fatal("Hyprland directory does not exist. Please provide a valid path in the secrets.ini file.")
 	}
 
 	tree, err := config.GetTreeFromDir(hyprlandDirName)
 	if err != nil {
-		userUI.PrintError(fmt.Errorf("error building directory tree: %w", err))
 		log.Fatal("Error building directory tree:", err)
 	}
 
@@ -57,7 +54,6 @@ func NewAgent() *Agent {
 	})
 
 	if err != nil {
-		userUI.PrintError(err)
 		log.Fatal(err)
 	}
 
@@ -70,7 +66,6 @@ func NewAgent() *Agent {
 		history,
 	)
 	if err != nil {
-		userUI.PrintError(fmt.Errorf("failed to create chat session: %w", err))
 		log.Fatalf("Failed to create chat session: %v", err)
 	}
 
