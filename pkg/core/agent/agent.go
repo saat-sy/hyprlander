@@ -45,8 +45,6 @@ func NewAgent() *Agent {
 		log.Fatal("Error building directory tree:", err)
 	}
 
-	userUI.Print("System initialized with directory tree")
-
 	history := []*genai.Content{
 		genai.NewContentFromText(GetSystemPrompt(tree), genai.RoleUser),
 	}
@@ -92,8 +90,6 @@ func (agent *Agent) InvokeAgent(prompt string) {
 	var pendingFunctionResponse *genai.FunctionResponse
 
 	for turn := 1; turn <= agent.maxTurns; turn++ {
-		agent.ui.Print(fmt.Sprintf("----- Turn %d -----", turn))
-
 		var parts []genai.Part
 
 		if pendingFunctionResponse != nil {

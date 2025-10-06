@@ -9,7 +9,7 @@ import (
 	"github.com/saat-sy/hyprlander/pkg/ui"
 )
 
-type Setup struct{
+type Setup struct {
 	ui ui.UI
 }
 
