@@ -31,3 +31,23 @@ func GetSecretFilePath() (string, error) {
 	}
 	return filepath.Join(homeDir, SecretFileName), nil
 }
+
+func GetTreeFromDir(root string) ([]string, error) {
+	var files []string
+
+	err := filepath.WalkDir(root, func(path string, d os.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if !d.IsDir() {
+			absPath, err := filepath.Abs(path)
+			if err != nil {
+				return err
+			}
+			files = append(files, absPath)
+		}
+		return nil
+	})
+
+	return files, err
+}
