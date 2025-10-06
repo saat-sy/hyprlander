@@ -40,11 +40,11 @@ func GetTreeFromDir(root string) ([]string, error) {
 			return err
 		}
 		if !d.IsDir() {
-			relPath, err := filepath.Rel(root, path)
+			absPath, err := filepath.Abs(path)
 			if err != nil {
 				return err
 			}
-			files = append(files, relPath)
+			files = append(files, absPath)
 		}
 		return nil
 	})
