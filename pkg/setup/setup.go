@@ -1,18 +1,22 @@
 package setup
 
 import (
-	"bufio"
 	"fmt"
 	"os"
 	"strings"
 
 	"github.com/saat-sy/hyprlander/pkg/config"
+	"github.com/saat-sy/hyprlander/pkg/ui"
 )
 
-type Setup struct{}
+type Setup struct{
+	ui ui.UI
+}
 
 func NewSetup() *Setup {
-	return &Setup{}
+	return &Setup{
+		ui: ui.New(),
+	}
 }
 
 func (s *Setup) Run(values map[string]string) error {
@@ -80,19 +84,7 @@ func (s *Setup) Update(values map[string]string) error {
 }
 
 func (s *Setup) Prompt(message string) (string, error) {
-	fmt.Print(message)
-	reader := bufio.NewReader(os.Stdin)
-	data, err := reader.ReadString('\n')
-	if err != nil {
-		return "", fmt.Errorf("failed to read data: %w", err)
-	}
-
-	data = strings.TrimSpace(data)
-	if data == "" {
-		return "", fmt.Errorf("input cannot be empty")
-	}
-
-	return data, nil
+	return s.ui.InputRequired(message)
 }
 
 func (s *Setup) FetchConfig() (map[string]string, error) {

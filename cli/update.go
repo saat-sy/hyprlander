@@ -2,9 +2,9 @@ package cli
 
 import (
 	"fmt"
-	"strconv"
 
 	"github.com/saat-sy/hyprlander/pkg/setup"
+	"github.com/saat-sy/hyprlander/pkg/ui"
 	"github.com/spf13/cobra"
 )
 
@@ -14,7 +14,8 @@ func UpdateCommand() *cobra.Command {
 		Short: "Update gemini api key",
 		Long:  "Update the stored gemini api key used for authentication",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			fmt.Println("Fetching current config...")
+			userUI := ui.New()
+			userUI.Print("Fetching current config...")
 
 			update := setup.NewSetup()
 
@@ -28,38 +29,23 @@ func UpdateCommand() *cobra.Command {
 				return fmt.Errorf("failed to fetch current config: %w", err)
 			}
 
-			fmt.Println("What do you want to update?")
-
 			var keys []string
 			for key := range currentConfig {
 				keys = append(keys, key)
 			}
 
-			for i, key := range keys {
-				fmt.Printf("%d. %s\n", i+1, key)
-			}
-
-			inp, err := update.Prompt("Enter the number corresponding to the field you want to update: ")
+			selectedIndex, err := userUI.Select("What do you want to update?", keys)
 			if err != nil {
-				return fmt.Errorf("failed to read input: %w", err)
+				return fmt.Errorf("failed to read selection: %w", err)
 			}
 
-			selectedIndex, err := strconv.Atoi(inp)
-			if err != nil {
-				return fmt.Errorf("invalid input, please enter a number: %w", err)
-			}
-
-			if selectedIndex < 1 || selectedIndex > len(keys) {
-				return fmt.Errorf("invalid selection")
-			}
-
-			selectedKey := keys[selectedIndex-1]
+			selectedKey := keys[selectedIndex]
 
 			contentMap := make(map[string]string)
 
 			for key, value := range currentConfig {
 				if key == selectedKey {
-					newValue, err := update.Prompt(fmt.Sprintf("Enter new value for %s (current: %s): ", key, value))
+					newValue, err := userUI.Input(fmt.Sprintf("Enter new value for %s (current: %s): ", key, value))
 					if err != nil {
 						return fmt.Errorf("failed to read new value: %w", err)
 					}
@@ -73,7 +59,7 @@ func UpdateCommand() *cobra.Command {
 				return fmt.Errorf("failed to update config: %w", err)
 			}
 
-			fmt.Println("Config updated successfully!")
+			userUI.PrintSuccess("Config updated successfully!")
 			return nil
 		},
 	}

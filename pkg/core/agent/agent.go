@@ -1,16 +1,14 @@
 package agent
 
 import (
-	"bufio"
 	"context"
 	"fmt"
 	"log"
-	"os"
-	"strings"
 
 	"github.com/saat-sy/hyprlander/pkg/config"
 	"github.com/saat-sy/hyprlander/pkg/core/tools"
 	"github.com/saat-sy/hyprlander/pkg/setup"
+	"github.com/saat-sy/hyprlander/pkg/ui"
 	"google.golang.org/genai"
 )
 
@@ -19,13 +17,16 @@ type Agent struct {
 	chatSession *genai.Chat
 	history     []*genai.Content
 	maxTurns    int
+	ui          ui.UI
 }
 
 func NewAgent() *Agent {
 	set := setup.NewSetup()
+	userUI := ui.New()
 
 	keys, err := set.FetchConfig()
 	if err != nil {
+		userUI.PrintError(fmt.Errorf("error fetching config: %w", err))
 		log.Fatal("Error fetching config:", err)
 	}
 
@@ -34,15 +35,17 @@ func NewAgent() *Agent {
 
 	exists, err := config.DirExists(hyprlandDirName)
 	if !exists || err != nil {
+		userUI.PrintError(fmt.Errorf("hyprland directory does not exist. Please provide a valid path in the secrets.ini file"))
 		log.Fatal("Hyprland directory does not exist. Please provide a valid path in the secrets.ini file.")
 	}
 
 	tree, err := config.GetTreeFromDir(hyprlandDirName)
 	if err != nil {
+		userUI.PrintError(fmt.Errorf("error building directory tree: %w", err))
 		log.Fatal("Error building directory tree:", err)
 	}
 
-	fmt.Println(GetSystemPrompt(tree))
+	userUI.Print("System initialized with directory tree")
 
 	history := []*genai.Content{
 		genai.NewContentFromText(GetSystemPrompt(tree), genai.RoleUser),
@@ -56,6 +59,7 @@ func NewAgent() *Agent {
 	})
 
 	if err != nil {
+		userUI.PrintError(err)
 		log.Fatal(err)
 	}
 
@@ -68,6 +72,7 @@ func NewAgent() *Agent {
 		history,
 	)
 	if err != nil {
+		userUI.PrintError(fmt.Errorf("failed to create chat session: %w", err))
 		log.Fatalf("Failed to create chat session: %v", err)
 	}
 
@@ -76,17 +81,18 @@ func NewAgent() *Agent {
 		chatSession: chat,
 		history:     history,
 		maxTurns:    10,
+		ui:          userUI,
 	}
 }
 
 func (agent *Agent) InvokeAgent(prompt string) {
-	fmt.Printf("Initial Request: %s\n\n", prompt)
+	agent.ui.Print(fmt.Sprintf("Initial Request: %s", prompt))
 
 	currentPrompt := prompt
 	var pendingFunctionResponse *genai.FunctionResponse
 
 	for turn := 1; turn <= agent.maxTurns; turn++ {
-		fmt.Printf("----- Turn %d -----\n", turn)
+		agent.ui.Print(fmt.Sprintf("----- Turn %d -----", turn))
 
 		var parts []genai.Part
 
@@ -101,57 +107,57 @@ func (agent *Agent) InvokeAgent(prompt string) {
 
 		res, err := agent.chatSession.SendMessage(agent.context, parts...)
 		if err != nil {
-			log.Printf("Error sending message: %v. Trying again...", err)
+			agent.ui.PrintError(fmt.Errorf("error sending message: %w", err))
 			continue
 		}
 
 		if len(res.Candidates) == 0 {
-			fmt.Println("No response from the model. Trying again...")
+			agent.ui.Print("No response from the model. Trying again...")
 			continue
 		}
 
 		candidate := res.Candidates[0]
 		if len(candidate.Content.Parts) == 0 {
-			fmt.Println("No content parts in response. Trying again...")
+			agent.ui.Print("No content parts in response. Trying again...")
 			continue
 		}
 
 		if textPart := candidate.Content.Parts[0].Text; textPart != "" {
-			fmt.Printf("Model Response: %s\n", textPart)
+			agent.ui.PrintAgent(textPart)
 			userInput, err := agent.userInteraction()
 			if err != nil {
-				log.Printf("Error during user interaction: %v. Trying again...", err)
+				agent.ui.PrintError(fmt.Errorf("error during user interaction: %w", err))
 				continue
 			}
 
 			if userInput != "" {
 				currentPrompt = userInput
 			} else {
-				fmt.Println("No user input provided. Ending interaction.")
+				agent.ui.Print("No user input provided. Ending interaction.")
 				return
 			}
 		} else if funcCall := candidate.Content.Parts[0].FunctionCall; funcCall != nil {
-			fmt.Printf("The agent would like to call a function: %s with args %v\n", funcCall.Name, funcCall.Args)
+			agent.ui.PrintTool(funcCall.Name, funcCall.Args)
 
 			confirm, err := agent.confirmExecution()
 			if err != nil {
-				log.Printf("Error during confirmation: %v. Trying again...", err)
+				agent.ui.PrintError(fmt.Errorf("error during confirmation: %w", err))
 				continue
 			}
 
 			if !confirm {
-				fmt.Println("Function execution cancelled by user.")
+				agent.ui.Print("Function execution cancelled by user.")
 				return
 			}
 
 			output, err := agent.executeFunctionCall(funcCall)
 			if err != nil {
-				log.Printf("Error executing function call: %v. Trying again...", err)
+				agent.ui.PrintError(fmt.Errorf("error executing function call: %w", err))
 				currentPrompt = fmt.Sprintf("The function call failed with error: %v. Please provide an alternative solution.", err)
 				continue
 			}
 
-			fmt.Printf("Function Output: %s\n", output)
+			agent.ui.PrintSuccess(fmt.Sprintf("Function Output: %s", output))
 
 			pendingFunctionResponse = &genai.FunctionResponse{
 				Name:     funcCall.Name,
@@ -162,42 +168,12 @@ func (agent *Agent) InvokeAgent(prompt string) {
 }
 
 func (agent *Agent) confirmExecution() (bool, error) {
-	for {
-		fmt.Print("Do you want to proceed? (y/n): ")
-		reader := bufio.NewReader(os.Stdin)
-		data, err := reader.ReadString('\n')
-		if err != nil {
-			return false, fmt.Errorf("failed to read data: %w", err)
-		}
-
-		data = strings.TrimSpace(data)
-		if data == "" {
-			fmt.Println("Input cannot be empty. Please enter 'y' or 'n'.")
-			continue
-		}
-
-		switch data {
-		case "y", "Y":
-			return true, nil
-		case "n", "N":
-			return false, nil
-		default:
-			fmt.Println("Invalid input. Please enter 'y' or 'n'.")
-		}
-	}
+	return agent.ui.Confirm("Do you want to proceed?")
 }
 
 func (agent *Agent) userInteraction() (string, error) {
-	fmt.Println("User Interaction Required:")
-	fmt.Println("Please provide any necessary suggestion or leave blank:")
-	reader := bufio.NewReader(os.Stdin)
-	data, err := reader.ReadString('\n')
-	if err != nil {
-		return "", fmt.Errorf("failed to read data: %w", err)
-	}
-
-	data = strings.TrimSpace(data)
-	return data, nil
+	agent.ui.Print("User Interaction Required:")
+	return agent.ui.Input("Please provide any necessary suggestion or leave blank: ")
 }
 
 func (agent *Agent) executeFunctionCall(funcCall *genai.FunctionCall) (string, error) {
