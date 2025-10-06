@@ -133,7 +133,7 @@ func (c *Console) Print(message string) {
 
 func (c *Console) PrintAgent(message string) {
 	fmt.Printf("\n%s%s🤖 Agent:%s\n", Blue, Bold, Reset)
-	fmt.Printf("%s\n\n", message)
+	fmt.Printf(" %s❯%s %s\n\n", Blue, Reset, message)
 }
 
 func (c *Console) PrintTool(toolName string, args map[string]interface{}) {
