@@ -5,6 +5,7 @@ import (
 
 	"github.com/saat-sy/hyprlander/pkg/config"
 	"github.com/saat-sy/hyprlander/pkg/setup"
+	"github.com/saat-sy/hyprlander/pkg/ui"
 	"github.com/spf13/cobra"
 )
 
@@ -14,13 +15,14 @@ func InitCommand() *cobra.Command {
 		Short: "Initialize hyprlander configuration",
 		Long:  "Initialize hyprlander by setting up configuration directories and API key storage",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			fmt.Println("Initializing Hyprlander...")
+			userUI := ui.New()
+			userUI.Print("Initializing Hyprlander...")
 
 			init := setup.NewSetup()
 
 			err := init.Check()
 			if err == nil {
-				fmt.Println("Hyprland already initialized!")
+				userUI.PrintSuccess("Hyprland already initialized!")
 				return nil
 			}
 
@@ -42,7 +44,7 @@ func InitCommand() *cobra.Command {
 				return fmt.Errorf("could not complete initialization: %w", err)
 			}
 
-			fmt.Println("Hyprlander initialized successfully!")
+			userUI.PrintSuccess("Hyprlander initialized successfully!")
 			return nil
 		},
 	}
