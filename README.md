@@ -115,12 +115,10 @@ go build -o hyprlander .
 - [x] ✅ Basic CLI structure
 - [x] ✅ Initialization system
 - [x] ✅ API key storage
-- [ ] 🚧 ReAct agent core implementation
-- [ ] 🚧 Hyprland configuration parser
+- [x] ✅ ReAct agent core implementation
 - [ ] 🚧 Safe configuration modification with rollback
-- [ ] 📋 Configuration versioning and history
-- [ ] 📋 Integration with Hyprland community configs and themes
-- [ ] 📋 Multi-modal input (screenshots for visual feedback)
+- [ ] 🚧 Tool to research Hyprland docs
+- [ ] 🚧 Integration with Hyprland community configs and themes
 
 ## 📄 License
 
