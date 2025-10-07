@@ -35,6 +35,9 @@ type UI interface {
 	Print(message string)
 	PrintAgent(message string)
 	PrintTool(toolName string, args map[string]interface{})
+	PrintReadTool(args map[string]interface{})
+	PrintWriteTool(args map[string]interface{})
+	PrintShellTool(args map[string]interface{})
 	PrintError(err error)
 	PrintSuccess(message string)
 	PrintWarning(message string)
@@ -59,6 +62,7 @@ func (c *Console) Input(prompt string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("failed to read input: %w", err)
 	}
+	fmt.Println("")
 	return strings.TrimSpace(input), nil
 }
 
@@ -144,16 +148,52 @@ func (c *Console) PrintTool(toolName string, args map[string]interface{}) {
 	fmt.Println()
 }
 
+func (c *Console) PrintReadTool(args map[string]interface{}) {
+	fmt.Printf("%s%s🔧 Reading File:%s", Blue, Bold, Reset)
+	if path, ok := args["path"].(string); ok {
+		fmt.Printf("%s%s%s", Cyan, path, Reset)
+	}
+	if len(args) > 1 {
+		fmt.Printf("%s%s %v%s", Gray, Dim, args, Reset)
+	}
+	fmt.Println()
+}
+
+func (c *Console) PrintWriteTool(args map[string]interface{}) {
+	fmt.Printf("%s%s🔧 Writing File:%s", Green, Bold, Reset)
+	if path, ok := args["path"].(string); ok {
+		fmt.Printf("%s%s%s", Cyan, path, Reset)
+	}
+	fmt.Println()
+	if content, ok := args["content"].(string); ok {
+		fmt.Printf("%s%sContent:%s\n%s", Gray, Dim, Reset, content)
+	} else if len(args) > 1 {
+		fmt.Printf("%s%s %v%s", Gray, Dim, args, Reset)
+	}
+	fmt.Println()
+}
+
+func (c *Console) PrintShellTool(args map[string]interface{}) {
+	fmt.Printf("%s%s🔧 Executing Command:%s\n", Yellow, Bold, Reset)
+	if command, ok := args["command"].(string); ok {
+		fmt.Printf("%s%s❯❯ %s%s%s\n", BgRed, White, command, Reset, Reset)
+	}
+	if len(args) > 1 {
+		fmt.Printf("%s%s  %v%s", Gray, Dim, args, Reset)
+		fmt.Println()
+	}
+}
+
 func (c *Console) PrintError(err error) {
 	fmt.Printf("\n%s%s❌ Error:%s %s\n\n", Red, Bold, Reset, err.Error())
 }
 
 func (c *Console) PrintSuccess(message string) {
-	fmt.Printf("%s%s✅ %s%s\n", Green, Bold, message, Reset)
+	fmt.Printf("\n%s%s✅ %s%s\n\n", Green, Bold, message, Reset)
 }
 
 func (c *Console) PrintWarning(message string) {
-	fmt.Printf("%s%s⚠ Warning:%s %s\n", Yellow, Bold, Reset, message)
+	fmt.Printf("\n%s%s⚠ Warning:%s %s\n\n", Yellow, Bold, Reset, message)
 }
 
 func (c *Console) PrintTitle(title string) {
