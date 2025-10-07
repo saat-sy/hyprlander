@@ -6,6 +6,8 @@ import (
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/saat-sy/hyprlander/pkg/core/tools"
 )
 
 const (
@@ -166,7 +168,11 @@ func (c *Console) PrintWriteTool(args map[string]interface{}) {
 	}
 	fmt.Println()
 	if content, ok := args["content"].(string); ok {
-		fmt.Printf("%s%sContent:%s\n%s", Gray, Dim, Reset, content)
+		if path, ok := args["path"].(string); ok {
+			c.printDiff(path, content)
+		} else {
+			fmt.Printf("%s%sContent:%s\n%s", Gray, Dim, Reset, content)
+		}
 	} else if len(args) > 1 {
 		fmt.Printf("%s%s %v%s", Gray, Dim, args, Reset)
 	}
@@ -202,4 +208,48 @@ func (c *Console) PrintTitle(title string) {
 
 func (c *Console) PrintSeparator() {
 	fmt.Printf("%s%s────────────────────────────────────────%s\n", Gray, Dim, Reset)
+}
+
+func (c *Console) printDiff(path, content string) {
+	originalContent, err := tools.ReadFile(path)
+	if err != nil {
+		fmt.Printf("%s%sContent:%s\n%s\n", Gray, Dim, Reset, content)
+		return
+	}
+
+	originalLines := strings.Split(originalContent, "\n")
+	newLines := strings.Split(content, "\n")
+
+	var diffLines []string
+	maxLines := len(originalLines)
+	if len(newLines) > maxLines {
+		maxLines = len(newLines)
+	}
+
+	diffLines = append(diffLines, fmt.Sprintf("%s--- %s%s", Red, path, Reset))
+	diffLines = append(diffLines, fmt.Sprintf("%s+++ %s%s", Green, path, Reset))
+
+	for i := 0; i < maxLines; i++ {
+		var oldLine, newLine string
+
+		if i < len(originalLines) {
+			oldLine = originalLines[i]
+		}
+		if i < len(newLines) {
+			newLine = newLines[i]
+		}
+
+		if oldLine != newLine {
+			if i < len(originalLines) {
+				diffLines = append(diffLines, fmt.Sprintf("%s-%s%s", Red, oldLine, Reset))
+			}
+			if i < len(newLines) {
+				diffLines = append(diffLines, fmt.Sprintf("%s+%s%s", Green, newLine, Reset))
+			}
+		} else if oldLine != "" {
+			diffLines = append(diffLines, fmt.Sprintf(" %s", oldLine))
+		}
+	}
+
+	fmt.Printf("%s%sDiff:%s\n%s\n", Gray, Dim, Reset, strings.Join(diffLines, "\n"))
 }
