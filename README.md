@@ -1,10 +1,12 @@
 # Hyprlander 🏔️
 
-> **An intelligent ReAct agent for Hyprland configuration management**
-
 Hyprlander is a command-line tool that makes it easier than ever to manage and customize your Hyprland window manager. Just type what you want to change in plain language and Hyprlander figures it out and updates your config for you.
 
 Inspired by tools like `gemini-cli` and `claude-code`, it uses a smart reasoning framework to interpret your requests and take action, so you don’t have to dig through config files or memorize syntax.
+
+## 🎬 Demo
+
+![Hyprlander Demo](demo.gif)
 
 ## ✨ Features
 
